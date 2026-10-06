@@ -1,0 +1,191 @@
+import { Button, LineEdit, VerticalBox, HorizontalBox, Switch,
+         ScrollView } from "std-widgets.slint";
+
+struct UnitItem {
+    emoji: string,
+    name: string,
+    value: string,
+    source: string,
+    whole: string,
+    has-whole: bool,
+}
+
+component UnitCard inherits Rectangle {
+    in property <UnitItem> item;
+    in property <bool> show-source;
+    in property <bool> show-whole;
+    height: col.preferred-height + 24px;
+    border-radius: 14px;
+    background: #1e1b4b;
+    border-width: 1px;
+    border-color: #6366f180;
+
+    col := VerticalLayout {
+        padding: 12px;
+        spacing: 4px;
+        alignment: start;
+
+        HorizontalLayout {
+            spacing: 8px;
+            alignment: start;
+            Text {
+                text: item.emoji;
+                font-size: 20px;
+            }
+            Text {
+                text: item.name;
+                font-size: 15px;
+                font-weight: 700;
+                color: #f8fafc;
+            }
+        }
+
+        Text {
+            text: item.value;
+            font-size: 21px;
+            font-weight: 900;
+            color: #a78bfa;
+        }
+
+        Text {
+            text: item.source;
+            font-size: 10px;
+            color: #94a3b8;
+            wrap: word-wrap;
+            visible: show-source;
+        }
+
+        Text {
+            text: item.whole;
+            font-size: 11px;
+            font-weight: 600;
+            color: #34d399;
+            visible: show-whole && item.has-whole;
+        }
+    }
+}
+
+export component App inherits Window {
+    preferred-width: 560px;
+    preferred-height: 780px;
+    title: "Alturometro Meme";
+    background: #0f0c29;
+
+    in-out property <string> height-text;
+    in-out property <bool> show-source: false;
+    in-out property <bool> show-whole: true;
+    in-out property <bool> has-results: false;
+    in-out property <string> height-cm;
+    in-out property <string> error-text;
+    in-out property <[UnitItem]> units;
+    in-out property <string> copy-feedback;
+
+    callback do-calculate();
+    callback copy-results();
+
+    VerticalLayout {
+        padding: 20px;
+        spacing: 14px;
+
+        Text {
+            text: "ALTUROMETRO MEME";
+            font-size: 27px;
+            font-weight: 900;
+            color: #c084fc;
+            horizontal-alignment: center;
+        }
+        Text {
+            text: "Convierte tu estatura a unidades que nadie pidio";
+            font-size: 12px;
+            color: #94a3b8;
+            horizontal-alignment: center;
+        }
+
+        HorizontalLayout {
+            spacing: 10px;
+            input := LineEdit {
+                horizontal-stretch: 1;
+                placeholder-text: "Tu altura en metros (ej: 1.81)";
+                text <=> root.height-text;
+                accepted => { root.do-calculate(); }
+            }
+            Button {
+                text: "Calcular";
+                primary: true;
+                clicked => { root.do-calculate(); }
+            }
+        }
+
+        if error-text != "": Rectangle {
+            height: err.preferred-height + 16px;
+            border-radius: 10px;
+            background: #7f1d1d40;
+            border-width: 1px;
+            border-color: #ef444480;
+            err := Text {
+                x: 8px; y: 8px;
+                width: parent.width - 16px;
+                text: root.error-text;
+                color: #fca5a5;
+                font-size: 12px;
+                wrap: word-wrap;
+                horizontal-alignment: center;
+            }
+        }
+
+        HorizontalLayout {
+            alignment: center;
+            spacing: 20px;
+            Switch {
+                text: "Fuentes de medida";
+                checked <=> root.show-source;
+            }
+            Switch {
+                text: "Piezas enteras";
+                checked <=> root.show-whole;
+            }
+        }
+
+        if has-results: Rectangle {
+            height: 40px;
+            border-radius: 12px;
+            background: #1e1b4b80;
+            border-width: 1px;
+            border-color: #6366f150;
+            Text {
+                text: "Estatura: " + height-text + " m  (" + height-cm + ")";
+                font-size: 14px;
+                color: #e2e8f0;
+                horizontal-alignment: center;
+            }
+        }
+
+        if has-results: HorizontalLayout {
+            alignment: center;
+            Button {
+                text: copy-feedback == "" ? "Copiar medidas" : copy-feedback;
+                clicked => { root.copy-results(); }
+            }
+        }
+
+        ScrollView {
+            vertical-stretch: 1;
+            VerticalLayout {
+                spacing: 8px;
+                for item[i] in root.units: UnitCard {
+                    item: item;
+                    show-source: root.show-source;
+                    show-whole: root.show-whole;
+                }
+            }
+        }
+
+        Text {
+            text: "Todo es aproximado. Los tamanios varian y las equivalencias son para divertirse.";
+            font-size: 10px;
+            color: #64748b;
+            wrap: word-wrap;
+            horizontal-alignment: center;
+        }
+    }
+}

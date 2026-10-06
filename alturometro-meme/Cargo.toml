@@ -1,0 +1,8 @@
+[package]
+name = "alturometro-meme"
+version = "0.2.0"
+edition = "2021"
+
+[[bin]]
+name = "alturometro"
+path = "src/main.rs"
