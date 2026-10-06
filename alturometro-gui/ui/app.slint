@@ -1,5 +1,4 @@
-import { Button, LineEdit, VerticalBox, HorizontalBox, Switch,
-         ScrollView } from "std-widgets.slint";
+import { Button, LineEdit, Switch, ScrollView } from "std-widgets.slint";
 
 struct UnitItem {
     emoji: string,
@@ -14,119 +13,140 @@ component UnitCard inherits Rectangle {
     in property <UnitItem> item;
     in property <bool> show-source;
     in property <bool> show-whole;
-    height: col.preferred-height + 24px;
-    border-radius: 14px;
-    background: #1e1b4b;
+    height: card-col.preferred-height + 20px;
+    border-radius: 10px;
+    background: white;
     border-width: 1px;
-    border-color: #6366f180;
+    border-color: #e5e7eb;
+    clip: true;
 
-    col := VerticalLayout {
-        padding: 12px;
-        spacing: 4px;
+    card-col := VerticalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+        spacing: 6px;
         alignment: start;
 
         HorizontalLayout {
-            spacing: 8px;
+            spacing: 10px;
             alignment: start;
             Text {
                 text: item.emoji;
-                font-size: 20px;
+                font-size: 22px;
             }
-            Text {
-                text: item.name;
-                font-size: 15px;
-                font-weight: 700;
-                color: #f8fafc;
+            VerticalLayout {
+                spacing: 2px;
+                alignment: center;
+                Text {
+                    text: item.name;
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #0f172a;
+                }
+                Text {
+                    text: item.value;
+                    font-size: 26px;
+                    font-weight: 800;
+                    color: #4f46e5;
+                }
             }
-        }
-
-        Text {
-            text: item.value;
-            font-size: 21px;
-            font-weight: 900;
-            color: #a78bfa;
         }
 
         Text {
             text: item.source;
-            font-size: 10px;
+            font-size: 11px;
             color: #94a3b8;
             wrap: word-wrap;
             visible: show-source;
         }
 
-        Text {
-            text: item.whole;
-            font-size: 11px;
-            font-weight: 600;
-            color: #34d399;
-            visible: show-whole && item.has-whole;
+        if show-whole && item.has-whole: Rectangle {
+            height: 24px;
+            border-radius: 6px;
+            background: #ecfdf5;
+            Text {
+                text: item.whole;
+                font-size: 11px;
+                font-weight: 600;
+                color: #059669;
+                horizontal-alignment: center;
+            }
         }
     }
 }
 
 export component App inherits Window {
-    preferred-width: 560px;
-    preferred-height: 780px;
-    title: "Alturometro Meme";
-    background: #0f0c29;
+    preferred-width: 480px;
+    preferred-height: 760px;
+    title: "Alturometro";
+    background: #fafafa;
 
-    in-out property <string> height-text;
+    in-out property <string> height-text: "";
     in-out property <bool> show-source: false;
     in-out property <bool> show-whole: true;
     in-out property <bool> has-results: false;
     in-out property <string> height-cm;
     in-out property <string> error-text;
     in-out property <[UnitItem]> units;
-    in-out property <string> copy-feedback;
 
     callback do-calculate();
     callback copy-results();
 
     VerticalLayout {
-        padding: 20px;
-        spacing: 14px;
+        padding: 28px;
+        spacing: 20px;
 
         Text {
-            text: "ALTUROMETRO MEME";
-            font-size: 27px;
+            text: "Alturometro";
+            font-size: 32px;
             font-weight: 900;
-            color: #c084fc;
+            color: #0f172a;
             horizontal-alignment: center;
         }
         Text {
-            text: "Convierte tu estatura a unidades que nadie pidio";
-            font-size: 12px;
-            color: #94a3b8;
+            text: "Bananas, Big Macs, rubber ducks and more";
+            font-size: 13px;
+            color: #64748b;
             horizontal-alignment: center;
         }
 
-        HorizontalLayout {
-            spacing: 10px;
-            input := LineEdit {
-                horizontal-stretch: 1;
-                placeholder-text: "Tu altura en metros (ej: 1.81)";
-                text <=> root.height-text;
-                accepted => { root.do-calculate(); }
-            }
-            Button {
-                text: "Calcular";
-                primary: true;
-                clicked => { root.do-calculate(); }
+        Rectangle {
+            height: input-row.preferred-height + 20px;
+            border-radius: 10px;
+            background: white;
+            border-width: 1px;
+            border-color: #e5e7eb;
+
+            input-row := HorizontalLayout {
+                padding: 10px;
+                spacing: 10px;
+                input := LineEdit {
+                    horizontal-stretch: 1;
+                    placeholder-text: "Height in meters";
+                    text <=> root.height-text;
+                    font-size: 15px;
+                    accepted => { root.do-calculate(); }
+                }
+                Button {
+                    text: "Go";
+                    primary: true;
+                    clicked => { root.do-calculate(); }
+                }
             }
         }
 
         if error-text != "": Rectangle {
             height: err.preferred-height + 16px;
-            border-radius: 10px;
-            background: #7f1d1d40;
+            border-radius: 8px;
+            background: #fef2f2;
             border-width: 1px;
-            border-color: #ef444480;
+            border-color: #fecaca;
             err := Text {
-                x: 8px; y: 8px;
-                width: parent.width - 16px;
+                x: 12px; y: 8px;
+                width: parent.width - 24px;
                 text: root.error-text;
-                color: #fca5a5;
+                color: #dc2626;
                 font-size: 12px;
                 wrap: word-wrap;
                 horizontal-alignment: center;
@@ -135,35 +155,45 @@ export component App inherits Window {
 
         HorizontalLayout {
             alignment: center;
-            spacing: 20px;
+            spacing: 24px;
             Switch {
-                text: "Fuentes de medida";
+                text: "Sources";
                 checked <=> root.show-source;
             }
             Switch {
-                text: "Piezas enteras";
+                text: "Pieces";
                 checked <=> root.show-whole;
             }
         }
 
         if has-results: Rectangle {
-            height: 40px;
-            border-radius: 12px;
-            background: #1e1b4b80;
-            border-width: 1px;
-            border-color: #6366f150;
-            Text {
-                text: "Estatura: " + height-text + " m  (" + height-cm + ")";
-                font-size: 14px;
-                color: #e2e8f0;
-                horizontal-alignment: center;
+            height: 42px;
+            border-radius: 8px;
+            background: #eef2ff;
+            HorizontalLayout {
+                padding-left: 16px;
+                padding-right: 16px;
+                alignment: center;
+                Text {
+                    text: height-text + " m";
+                    font-size: 15px;
+                    font-weight: 700;
+                    color: #4338ca;
+                }
+                Rectangle { width: 1px; height: 20px; background: #c7d2fe; }
+                Text {
+                    text: height-cm;
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: #6366f1;
+                }
             }
         }
 
         if has-results: HorizontalLayout {
             alignment: center;
-            Button {
-                text: copy-feedback == "" ? "Copiar medidas" : copy-feedback;
+            copy-btn := Button {
+                text: "Copy";
                 clicked => { root.copy-results(); }
             }
         }
@@ -181,10 +211,9 @@ export component App inherits Window {
         }
 
         Text {
-            text: "Todo es aproximado. Los tamanios varian y las equivalencias son para divertirse.";
+            text: "All numbers are approximate. Sizes vary.";
             font-size: 10px;
-            color: #64748b;
-            wrap: word-wrap;
+            color: #94a3b8;
             horizontal-alignment: center;
         }
     }

@@ -1,81 +1,106 @@
-# alturometro-meme
+# alturometro
 
-Mide tu estatura en platanos, manzanas, Big Macs y otras unidades que nadie pidio.
+Measure your height in bananas, Big Macs, rubber ducks and other units nobody asked for.
 
-## Dos versiones
+## What is this
 
-- **CLI** (`alturometro-meme/`) — binario estatico de 485 KB, corre en cualquier Linux x86_64 sin instalar nada.
-- **GUI** (`alturometro-gui/`) — ventana con Slint, 14 MB. Necesita fontconfig/freetype (viene en cualquier escritorio Linux).
+Two programs that do the same thing but for different people:
 
-## Compilar desde fuente
+- **CLI** (`alturometro-meme/`) — runs in a terminal. Static binary, zero dependencies.
+- **GUI** (`alturometro-gui/`) — windowed app with Slint. Modern look, software rendered.
 
-Necesitas Rust 1.99+ (o la ultima estable):
+## Quick start
+
+Grab a binary from `bin/` or the releases page.
+
+```bash
+# CLI
+./alturometro-linux-x86_64 1.81
+
+# GUI (Linux)
+./alturometro-gui-linux-x86_64
+```
+
+Type your height in meters. Use a dot or comma for decimals.
+
+## Build from source
+
+You need Rust 1.85+ (edition 2024):
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-### CLI (estatico, sin dependencias)
+### CLI
 
 ```bash
 cd alturometro-meme
 rustup target add x86_64-unknown-linux-musl
 cargo build --release --target x86_64-unknown-linux-musl
-# El binario queda en target/x86_64-unknown-linux-musl/release/alturometro
-# Copialo a donde quieras, no necesita .so ni libc.
 ```
+
+Output is a fully static binary. Copy it anywhere, it works.
 
 ### GUI
 
 ```bash
 cd alturometro-gui
 cargo build --release
-# Binario en target/release/alturometro-gui
 ```
 
-La GUI depende de fontconfig y freetype a la hora de correr. Cualquier
-distribucion Linux con escritorio (GNOME, KDE, XFCE, etc.) ya las tiene.
+Slint compiles itself. No external GUI libraries needed.
 
-## Binarios incluidos
+## CI
 
-El ZIP trae dos binarios compilados:
+GitHub Actions builds automatically for:
 
-| Binario | Tamano | Tipo | Donde corre |
-|---------|--------|------|-------------|
-| `alturometro` | ~485 KB | estatico (musl) | Cualquier Linux x86_64 |
-| `alturometro-gui` | ~14 MB | dinamico (glibc) | Linux x86_64 con fontconfig |
+| Target | CLI | GUI |
+|--------|-----|-----|
+| Linux x86_64 (musl static) | Yes | Yes |
+| Linux aarch64 (musl static) | Yes | - |
+| macOS x86_64 | Yes | - |
+| macOS aarch64 (Apple Silicon) | Yes | Yes |
+| Windows x86_64 | Yes | Yes |
 
-## Uso
+Push to `main` and the workflow runs. Artifacts appear in the Actions tab.
 
-```bash
-# CLI con argumento
-./alturometro 1.81
+## Compatibility
 
-# CLI interactivo
-./alturometro
+The CLI is a static musl binary. It has zero runtime dependencies.
+It runs on any Linux kernel 3.2+ on x86_64. No libc, no .so files.
 
-# GUI
-./alturometro-gui
-```
+The GUI needs fontconfig and freetype on Linux (any desktop has them).
+On Windows and macOS it works out of the box.
 
-## De donde salen los numeros
+### What about Windows XP / really old stuff
 
-Nada es inventado. Todas las medidas vienen de fuentes verificables:
+Rust dropped Windows XP support in 2019. The minimum is Windows 10.
+If you need XP, use the CLI through WINE or compile with the `thunk`
+crate and an older Rust nightly.
 
-| Unidad | Tamano | Fuente |
-|--------|--------|--------|
-| Platano | 18 cm | USDA: platanos Cavendish medianos 17-20 cm |
-| Manzana | 7.5 cm diam. | Wikipedia (Malus domestica): 7.0-8.3 cm diametro comercial |
-| Big Mac | 9 cm alto | WhatsNeue (2018): 6.9 cm alto x 10.4 cm diam., medido con calibre |
-| Patito de hule | 10 cm | Estandar comercial de fabricantes (4 pulgadas) |
-| Tiburon blanco | 4.5 m | CSULB Shark Lab: adultos promedio 4.3-4.5 m |
-| Jirafa | 5 m | Guinness World Records / San Diego Zoo: machos 4.6-5.5 m |
-| New Routemaster | 11.1 m | TfL / Wikipedia: autobus doble piso londinense |
-| Ballena azul | 24 m | Wikipedia / Monterey Bay Aquarium: adulto promedio 24-25 m |
-| Campo de futbol | 105 m | Reglamento FIFA |
-| Torre Eiffel | 330 m | tour-eiffel.paris: 330 m con antena |
+Pentium 4 is fine for modern Rust (it has SSE2). Anything older than
+Pentium III needs a `i586` target and loses the GUI.
 
-## Licencia
+## Where the numbers come from
 
-CLI: WTFPL v2 (hace lo que quieras).
-GUI: WTFPL v2. Slint en si es GPL-3.0, pero tu codigo derivado puede ser WTFPL.
+Every measurement has a source.
+
+| Unit | Size | Source |
+|------|------|--------|
+| Banana | 18 cm | USDA: Cavendish medium 17-20 cm |
+| Apple | 7.5 cm diameter | Wikipedia (Malus domestica): 7.0-8.3 cm |
+| Big Mac | 9 cm tall | WhatsNeue (2018): 6.9 cm measured with caliper |
+| Rubber duck | 10 cm | Commercial standard: 4 inches |
+| Great white shark | 4.5 m | CSULB Shark Lab: adults average 4.3-4.5 m |
+| Giraffe | 5 m | Guinness / San Diego Zoo: males 4.6-5.5 m |
+| New Routemaster | 11.1 m | TfL / Wikipedia: London double-decker |
+| Blue whale | 24 m | Wikipedia / Monterey Bay Aquarium: 24-25 m |
+| Football field | 105 m | FIFA regulations |
+| Eiffel Tower | 330 m | Official: 330 m with antenna |
+
+## License
+
+WTFPL v2. Do what you want.
+
+Slint is GPL-3.0. Your code is WTFPL. The combined binary ships under
+GPL-3.0 terms for the Slint parts. Read and share freely.

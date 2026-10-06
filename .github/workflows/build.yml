@@ -1,0 +1,121 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  cli-linux-x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+      - run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - run: cargo build --release --target x86_64-unknown-linux-musl --manifest-path alturometro-meme/Cargo.toml
+      - run: strip alturometro-meme/target/x86_64-unknown-linux-musl/release/alturometro
+      - run: alturometro-meme/target/x86_64-unknown-linux-musl/release/alturometro 1.81
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-linux-x86_64
+          path: alturometro-meme/target/x86_64-unknown-linux-musl/release/alturometro
+
+  cli-linux-aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+      - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
+      - run: cargo build --release --target aarch64-unknown-linux-musl --manifest-path alturometro-meme/Cargo.toml
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: aarch64-linux-gnu-gcc
+          CC_aarch64_unknown_linux_musl: aarch64-linux-gnu-gcc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-linux-aarch64
+          path: alturometro-meme/target/aarch64-unknown-linux-musl/release/alturometro
+
+  cli-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
+      - run: cargo build --release --target x86_64-apple-darwin --manifest-path alturometro-meme/Cargo.toml
+      - run: cargo build --release --target aarch64-apple-darwin --manifest-path alturometro-meme/Cargo.toml
+      - run: strip alturometro-meme/target/x86_64-apple-darwin/release/alturometro
+      - run: strip alturometro-meme/target/aarch64-apple-darwin/release/alturometro
+      - run: alturometro-meme/target/aarch64-apple-darwin/release/alturometro 1.81
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-macos-x86_64
+          path: alturometro-meme/target/x86_64-apple-darwin/release/alturometro
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-macos-aarch64
+          path: alturometro-meme/target/aarch64-apple-darwin/release/alturometro
+
+  cli-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --manifest-path alturometro-meme/Cargo.toml
+      - run: alturometro-meme/target/release/alturometro.exe 1.81
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-windows-x86_64
+          path: alturometro-meme/target/release/alturometro.exe
+
+  gui-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: sudo apt-get update && sudo apt-get install -y libfontconfig-dev libfreetype-dev
+      - run: cargo build --release --manifest-path alturometro-gui/Cargo.toml
+      - run: strip alturometro-gui/target/release/alturometro-gui
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-gui-linux-x86_64
+          path: alturometro-gui/target/release/alturometro-gui
+
+  gui-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --manifest-path alturometro-gui/Cargo.toml
+      - run: strip alturometro-gui/target/release/alturometro-gui
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-gui-macos-aarch64
+          path: alturometro-gui/target/release/alturometro-gui
+
+  gui-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --manifest-path alturometro-gui/Cargo.toml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alturometro-gui-windows-x86_64
+          path: alturometro-gui/target/release/alturometro-gui.exe
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --manifest-path alturometro-meme/Cargo.toml
